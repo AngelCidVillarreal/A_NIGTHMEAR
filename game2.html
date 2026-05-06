@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>FNAF: Mal Sueño - NIGHTMARE EDITION</title>
+    <link rel="icon" type="image/png" href="../0ne-nigth/img/fredypng1.png">
+    <style>
+        /* (Estilos se mantienen igual para conservar el diseño fullscreen) */
+        * { box-sizing: border-box; }
+        body { background: #000; color: white; overflow: hidden; font-family: 'Courier New', monospace; margin: 0; padding: 0; width: 100vw; height: 100vh; }
+        #intro { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black; display: flex; justify-content: center; align-items: center; z-index: 5000; cursor: pointer; text-align: center; }
+        #intro h1 { animation: pulse 2s infinite; font-size: 5vw; color: #f00; }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+        #game-container { position: relative; width: 100%; height: 100%; background: #000; display: none; overflow: hidden; }
+        #view { width: 100%; height: 100%; background-size: cover; background-position: center; position: relative; transition: filter 0.1s; }
+        .ui { position: absolute; z-index: 100; text-shadow: 2px 2px #000; font-weight: bold; pointer-events: none; }
+        #time { top: 20px; right: 30px; font-size: 32px; }
+        #energy-info { bottom: 120px; left: 30px; color: #0f0; font-size: 18px; }
+        #freddy-alert { position: absolute; top: 20px; left: 20px; width: 80px; display: none; z-index: 110; animation: blink 0.3s infinite; pointer-events: none; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+        .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 15px; z-index: 200; width: 90%; justify-content: center; }
+        .btn { padding: 20px 30px; background: rgba(34, 34, 34, 0.8); color: white; border: 2px solid #444; cursor: pointer; user-select: none; font-family: inherit; font-weight: bold; font-size: 16px; flex: 1; max-width: 200px; }
+        .btn:active { background: #600; }
+        #btn-music { background: rgba(0, 77, 64, 0.8); border-color: #00796b; display: none; }
+        #end-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .death-text { color: #f00; font-size: 8vw; text-shadow: 0 0 20px #500; animation: shake 0.2s infinite; }
+        .win-text { color: #fff; font-size: 6vw; text-shadow: 0 0 15px #aaa; }
+        @keyframes shake { 0% { transform: translate(3px, 2px); } 50% { transform: translate(-3px, -2px); } 100% { transform: translate(2px, -3px); } }
+        #jumpscare-video { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; object-fit: cover; filter: brightness(1) !important; }
+    </style>
+</head>
+<body>
+
+<div id="intro" onclick="startGame()">
+    <h1>"Esta vez no podrás despertar..."<br><br>[ MODO PESADILLA ]</h1>
+</div>
+
+<div id="game-container">
+    <div id="end-screen">
+        <h2 id="end-message"></h2>
+        <p id="sub-message" style="margin-top: 20px; color: #666;">El sueño nunca termina...</p>
+    </div>
+
+    <div id="view">
+        <div id="time" class="ui">12 AM</div>
+        <div id="energy-info" class="ui">LINTERNA: 100%</div>
+        <img id="freddy-alert" src="../0ne-nigth/img/fredypng1.png">
+        <video id="jumpscare-video" playsinline></video>
+    </div>
+
+    <div class="controls" id="ui-btns">
+        <button id="btn-left" class="btn">MIRAR RINCÓN</button>
+        <button id="btn-light" class="btn" style="background: rgba(90, 82, 0, 0.8);">LINTERNA</button>
+        <button id="btn-music" class="btn">DAR CUERDA</button>
+        <button id="btn-right" class="btn">MIRAR CAMA</button>
+    </div>
+</div>
+
+<script>
+    const assets = {
+        foxy_off: '../0ne-nigth/img/foxyacostado.jpeg',
+        foxy_p1: '../0ne-nigth/img/foxypng1.png',
+        foxy_p2: '../0ne-nigth/img/foxypng2.png',
+        foxy_on: '../0ne-nigth/img/foxyactivado.jpeg',
+        freddy_off: '../0ne-nigth/img/fredyapagado.jpeg',
+        freddy_on: '../0ne-nigth/img/fredyactivado.jpeg',
+        jump_foxy: '../0ne-nigth/img/ataquefoxy.mp4',
+        jump_freddy: '../0ne-nigth/img/ataque fredy.mp4'
+    };
+
+    let state = {
+        room: 'cama',
+        light: false,
+        freddyLevel: 0, 
+        foxyStage: 0, 
+        hour: 0,
+        energy: 100,
+        gameOver: false
+    };
+
+    const view = document.getElementById('view');
+    const freddyAlert = document.getElementById('freddy-alert');
+    const energyText = document.getElementById('energy-info');
+    const endScreen = document.getElementById('end-screen');
+    const endMessage = document.getElementById('end-message');
+    const musicBtn = document.getElementById('btn-music');
+    const uiBtns = document.getElementById('ui-btns');
+
+    function startGame() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) { elem.requestFullscreen(); }
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        uiBtns.style.display = 'flex';
+        update();
+        runGameLogic();
+    }
+
+    document.getElementById('btn-left').onclick = () => { if(!state.gameOver) { state.room = 'rincon'; update(); } };
+    document.getElementById('btn-right').onclick = () => { if(!state.gameOver) { state.room = 'cama'; update(); } };
+    
+    const lightBtn = document.getElementById('btn-light');
+    const turnOnLight = () => { if(state.energy > 0 && !state.gameOver) { state.light = true; update(); } };
+    const turnOffLight = () => { state.light = false; update(); };
+
+    lightBtn.onmousedown = turnOnLight;
+    lightBtn.onmouseup = turnOffLight;
+    lightBtn.ontouchstart = (e) => { e.preventDefault(); turnOnLight(); };
+    lightBtn.ontouchend = turnOffLight;
+
+    musicBtn.onclick = () => {
+        if(state.room === 'cama' && !state.gameOver) {
+            // DIFICULTAD: Antes bajaba 15, ahora 10. Tienes que presionar más veces.
+            state.freddyLevel = Math.max(0, state.freddyLevel - 10);
+            updateUI();
+        }
+    };
+
+    function update() {
+        if(state.gameOver) return;
+        const isCama = state.room === 'cama';
+        musicBtn.style.display = isCama ? 'block' : 'none';
+
+        if(!state.light || state.energy <= 0) {
+            view.style.filter = "brightness(0.04)"; 
+            view.style.backgroundImage = (state.room === 'rincon') ? `url('${assets.foxy_off}')` : `url('${assets.freddy_off}')`;
+        } else {
+            view.style.filter = "brightness(1)";
+            if(state.room === 'rincon') {
+                if(state.foxyStage === 0) view.style.backgroundImage = `url('${assets.foxy_off}')`;
+                else if(state.foxyStage === 1) view.style.backgroundImage = `url('${assets.foxy_p1}')`;
+                else if(state.foxyStage === 2) view.style.backgroundImage = `url('${assets.foxy_p2}')`;
+                else view.style.backgroundImage = `url('${assets.foxy_on}')`;
+                if(state.foxyStage > 0) state.foxyStage = 0; 
+            } else {
+                view.style.backgroundImage = `url('${state.freddyLevel > 50 ? assets.freddy_on : assets.freddy_off}')`;
+            }
+        }
+    }
+
+    function updateUI() {
+        freddyAlert.style.display = state.freddyLevel > 70 ? "block" : "none";
+        energyText.innerText = `LINTERNA: ${Math.max(0, Math.floor(state.energy))}%`;
+        energyText.style.color = state.energy < 30 ? "#f00" : "#0f0";
+    }
+
+    function runGameLogic() {
+        setInterval(() => {
+            if(state.gameOver) return;
+
+            // DIFICULTAD: Freddy avanza más rápido (2.5 en vez de 1.8)
+            state.freddyLevel += 2.5; 
+            if(state.freddyLevel >= 100) triggerJumpscare('freddy');
+
+            // DIFICULTAD: Foxy es más agresivo (Probabilidad 0.75 en vez de 0.85)
+            if(state.room !== 'rincon' || !state.light) {
+                if(Math.random() > 0.75) state.foxyStage = Math.min(4, state.foxyStage + 1);
+            }
+            if(state.foxyStage === 4) triggerJumpscare('foxy');
+
+            // DIFICULTAD: Consumo de luz aumentado (2.0 en vez de 1.5)
+            if(state.light) {
+                state.energy -= 2.0;
+                if(state.energy <= 0) { state.energy = 0; state.light = false; update(); }
+            } else if(state.energy < 100) {
+                // DIFICULTAD: Recarga mucho más lenta (0.02 en vez de 0.05)
+                state.energy += 0.02; 
+            }
+            updateUI();
+        }, 1000);
+
+        setInterval(() => {
+            if(state.gameOver) return;
+            state.hour++;
+            const displayHour = state.hour === 6 ? 6 : (state.hour % 12 || 12);
+            document.getElementById('time').innerText = displayHour + " AM";
+            if(state.hour === 6) { winGame(); }
+        }, 40000);
+    }
+
+    function triggerJumpscare(who) {
+        if(state.gameOver) return;
+        state.gameOver = true;
+        uiBtns.style.display = 'none';
+        view.style.filter = "brightness(1)"; 
+        const vid = document.getElementById('jumpscare-video');
+        vid.src = who === 'foxy' ? assets.jump_foxy : assets.jump_freddy;
+        vid.style.display = 'block';
+        vid.play().catch(() => { showEndScreen("HAS MUERTO", "death-text"); });
+        vid.onended = () => { showEndScreen("HAS MUERTO", "death-text"); };
+    }
+
+    function winGame() {
+        state.gameOver = true;
+        uiBtns.style.display = 'none';
+        showEndScreen("SOBREVIVISTE", "win-text");
+    }
+
+    function showEndScreen(text, className) {
+        document.getElementById('jumpscare-video').style.display = 'none';
+        endScreen.style.display = 'flex';
+        endMessage.innerText = text;
+        endMessage.className = className;
+        setTimeout(() => { window.location.href = "menu2.html"; }, 4000);
+    }
+</script>
+</body>
+</html>

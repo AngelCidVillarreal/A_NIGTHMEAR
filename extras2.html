@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>FNAF: Mal Sueño - EXTRAS</title>
+    <link rel="icon" type="image/png" href="../0ne-nigth/img/fredypng1.png">
+    <style>
+        body {
+            background: #050505;
+            color: white;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #f00;
+            text-shadow: 2px 2px #300;
+            font-size: 40px;
+            margin-top: 30px;
+            letter-spacing: 5px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px;
+        }
+
+        .card {
+            background: #111;
+            border: 2px solid #333;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: #f00;
+            background: #1a1a1a;
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            background: #000;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 10px 0 5px;
+            font-size: 18px;
+            color: #eee;
+        }
+
+        .card p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .video-btn {
+            background: #400;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+
+        .video-btn:hover { background: #800; }
+
+        .back-btn {
+            margin: 40px;
+            padding: 15px 30px;
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover { background: white; color: black; }
+
+        /* Modal para ver Jumpscares */
+        #video-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video { width: 80%; max-width: 800px; border: 5px solid #222; }
+    </style>
+</head>
+<body>
+
+    <h1>EXTRAS</h1>
+
+    <div class="container">
+        <div class="card">
+            <img src="../0ne-nigth/img/fredyapagado.jpeg">
+            <h3>Freddy (Inactivo)</h3>
+            <p>Estado inicial en la cama.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/fredyactivado.jpeg">
+            <h3>Freddy (Despierto)</h3>
+            <p>Se activa si la caja se detiene.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/foxyacostado.jpeg">
+            <h3>Foxy (Durmiendo)</h3>
+            <p>Se oculta en el rincón.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/foxypng1.png">
+            <h3>Foxy (Fase 1)</h3>
+            <p>Comienza a asomarse.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/foxypng2.png">
+            <h3>Foxy (Fase 2)</h3>
+            <p>Está listo para atacar.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/cajamusicalpng.png">
+            <h3>La Caja Musical</h3>
+            <p>Tu única defensa contra Freddy.</p>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/foxyjumpcare.jpeg">
+            <h3>Jumpscare: Foxy</h3>
+            <button class="video-btn" onclick="playVideo('../0ne-nigth/img/ataquefoxy.mp4')">VER VIDEO</button>
+        </div>
+
+        <div class="card">
+            <img src="../0ne-nigth/img/fredypng1.png">
+            <h3>Jumpscare: Freddy</h3>
+            <button class="video-btn" onclick="playVideo('../0ne-nigth/img/ataque fredy.mp4')">VER VIDEO</button>
+        </div>
+    </div>
+
+    <a href="menu2.html" class="back-btn">VOLVER AL MENÚ</a>
+
+    <div id="video-modal" onclick="this.style.display='none'">
+        <video id="player" controls></video>
+    </div>
+
+    <script>
+        function playVideo(src) {
+            const modal = document.getElementById('video-modal');
+            const player = document.getElementById('player');
+            player.src = src;
+            modal.display = 'flex';
+            modal.style.display = 'flex';
+            player.play();
+        }
+    </script>
+</body>
+</html>
