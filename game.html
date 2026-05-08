@@ -56,6 +56,15 @@
         }
 
         #jumpscare-video { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500; object-fit: cover; filter: brightness(1) !important; }
+
+        /* CONFIGURACIÓN VIDEO VENTILACIÓN */
+        #ventilation-sound {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0.01;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -65,6 +74,10 @@
 </div>
 
 <div id="game-container">
+    <video id="ventilation-sound" loop playsinline>
+        <source src="img/soundventilation.mp4" type="video/mp4">
+    </video>
+
     <div id="end-screen">
         <h2 id="end-message"></h2>
         <p id="sub-message" style="margin-top: 20px; color: #666;">Cerrando los ojos...</p>
@@ -93,8 +106,8 @@
         foxy_on: 'img/foxyactivado.jpeg',
         freddy_off: 'img/fredyapagado.jpeg',
         freddy_on: 'img/fredyactivado.jpeg',
-        jump_foxy: 'img/ataquefoxy.mp4',
-        jump_freddy: 'img/ataque fredy.mp4'
+        jump_foxy: 'img/ataque2foxy.mp4',
+        jump_freddy: 'img/ataquefedy2.mp4'
     };
 
     let state = {
@@ -114,6 +127,7 @@
     const endMessage = document.getElementById('end-message');
     const musicBtn = document.getElementById('btn-music');
     const uiBtns = document.getElementById('ui-btns');
+    const ventSound = document.getElementById('ventilation-sound');
 
     function startGame() {
         // Pantalla completa automática
@@ -124,6 +138,11 @@
         document.getElementById('intro').style.display = 'none';
         document.getElementById('game-container').style.display = 'block';
         uiBtns.style.display = 'flex';
+
+        // INICIAR SONIDO DE VENTILACIÓN
+        ventSound.volume = 1.0;
+        ventSound.play().catch(e => console.log("Audio esperando interacción"));
+
         update();
         runGameLogic();
     }
@@ -208,6 +227,11 @@
     function triggerJumpscare(who) {
         if(state.gameOver) return;
         state.gameOver = true;
+
+        // DETENER SONIDO DE VENTILACIÓN
+        ventSound.pause();
+        ventSound.currentTime = 0;
+
         uiBtns.style.display = 'none';
         view.style.filter = "brightness(1)"; 
         
@@ -231,6 +255,11 @@
 
     function winGame() {
         state.gameOver = true;
+
+        // DETENER SONIDO DE VENTILACIÓN
+        ventSound.pause();
+        ventSound.currentTime = 0;
+
         uiBtns.style.display = 'none';
         showEndScreen("HAS DESPERTADO", "win-text", "menu2.html");
     }
